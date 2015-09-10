@@ -1,0 +1,1089 @@
+<!doctype html>
+<html>
+<head>
+    <title>Analytics Dashboard-Youtube</title>
+    <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="assets/css/font-awesome.min.css" rel="stylesheet" media="screen">
+    <link href="assets/css/simple-line-icons.css" rel="stylesheet" media="screen">
+    <link rel="stylesheet" type="text/css" href="jquery-dot-ui.min.css">
+
+    <script src="assets/js/wow.min.js"></script>
+    <link href="assets/css/animate.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style2.css" media="screen">
+    <script src="assets/js/jquery-1.11.1.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/jquery.sticky.js"></script>
+    <script type="text/javascript" src="jquery-dot-ui.min.js"></script>
+    <script type="text/javascript" src="need.js"></script>
+    <script src="custom2.js"></script>
+    <script>
+        new WOW().init();
+    </script>
+    <script type="text/javascript" src="//www.google.com/jsapi"></script>
+    <link rel="shortcut icon" type="image/x-icon" href="lol2.ico" />
+    <title>Analytics Dashboard</title>
+    <style>
+        div#load_screen {
+            background: #fff;
+            opacity: 1;
+            position: fixed;
+            z-index: 10;
+            top: 0px;
+            width: 100%;
+            height: 1600px;
+        }
+
+            div#load_screen > div#loading {
+                color: #FFF;
+                width: 120px;
+                height: 24px;
+                margin: 300px auto;
+            }
+        /* start preloader */
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 99999;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-flex-flow: row nowrap;
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            /*justify-content: center;*/
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            background: none repeat scroll 0 0 #fff;
+        }
+    </style>
+
+</head>
+<body>
+
+   <!--   <div id="preloader">
+        <div id="status"></div>
+    </div>
+       -->
+
+    <!--<button name="my_full_name" id="but" >For logging in</button>-->
+    <div class="preloader" id="preloader">
+        <!--  <div class="sk-spinner sk-spinner-rotating-plane"></div> -->
+        <div id="load_screen"><div id="loading"><img src="loader.gif"></div></div>
+    </div>
+    <script language="javascript" type="text/javascript">
+
+    </script>
+
+    <script language="javascript" type="text/javascript">
+
+
+
+
+                var OAUTH2_CLIENT_ID = '237553780237-50837nl2bo92152gghq5lb4qt6aboomc.apps.googleusercontent.com';
+                var OAUTH2_SCOPES = [
+                  'https://www.googleapis.com/auth/yt-analytics.readonly',
+                  'https://www.googleapis.com/auth/youtube.readonly'
+                ];
+
+                var ONE_MONTH_IN_MILLISECONDS = 1000 * 60 * 60 * 24 * 30;
+
+                // Keep track of the currently authenticated user's YouTube channel ID.
+                var channelId;
+
+                // For information about the Google Chart Tools API, see:
+                // https://developers.google.com/chart/interactive/docs/quick_start
+                google.load('visualization', '1.0', { 'packages': ['corechart'] });
+                google.load('visualization', '1.0', { 'packages': ["table"] });
+                google.load("visualization", "1", { ' packages': ["bar"] });
+                google.load("visualization", "1", { ' packages': ["line"] });
+
+
+                // Upon loading, the Google APIs JS client automatically invokes this callback.
+                // See http://code.google.com/p/google-api-javascript-client/wiki/Authentication
+              //  alert('in3');
+
+             //   $("#but").click(function () {
+             /*   window.onJSClientLoad = function () {
+                    // alert('in4');
+                    gapi.auth.init(function () {
+                        //  alert('in2');
+                        window.setTimeout(checkAuth, 1);
+                        checkAuth();
+                    });
+                }
+                */
+                   // };
+              // });
+
+               // alert('in5');
+               /* function hello3() {
+                    document.getElementById('but').onclick = function () {
+                        alert('heymate');
+                        checkAuth();
+                        alert('gone');
+                    }
+                }
+                */
+                window.onJSClientLoad = function () {
+                    gapi.auth.init(function () {
+                        window.setTimeout(checkAuth, 1);
+                    });
+                };
+                // Attempt the immediate OAuth 2.0 client flow as soon as the page loads.
+                // If the currently logged-in Google Account has previously authorized
+                // the client specified as the OAUTH2_CLIENT_ID, then the authorization
+                // succeeds with no user intervention. Otherwise, it fails and the
+                // user interface that prompts for authorization needs to display.
+
+                function checkAuth() {
+                  //  alert('auth');
+                    gapi.auth.authorize({
+                        client_id: OAUTH2_CLIENT_ID,
+                        scope: OAUTH2_SCOPES,
+                        immediate: false
+                    }, handleAuthResult);
+                   // alert('maaki');
+                }
+
+                // Handle the result of a gapi.auth.authorize() call.
+                function handleAuthResult(authResult) {
+                  //  alert('came');
+                    if (authResult) {
+                      //  alert('came to good');
+                        // Authorization was successful. Hide authorization prompts and show
+                        // content that should be visible after authorization succeeds.
+                        $('.pre-auth').hide();
+                        $('.post-auth').show();
+
+                       // document.getElementById("pre-auth").style.visibility = "visible";
+                        loadAPIClientInterfaces();
+                    } else {
+                      //  alert('came to vbad ');
+                        // Authorization was unsuccessful. Show content related to prompting for
+                        // authorization and hide content that should be visible if authorization
+                        // succeeds.
+                        $('.post-auth').hide();
+                       $('.pre-auth').show();
+                       
+                        // Make the #login-link clickable. Attempt a non-immediate OAuth 2.0
+                        // client flow. The current function is called when that flow completes.
+                        $('#login-link').click(function () {
+                            gapi.auth.authorize({
+                                client_id: OAUTH2_CLIENT_ID,
+                                scope: OAUTH2_SCOPES,
+                                immediate: false
+                            }, handleAuthResult);
+                        });
+                    }
+                }
+                function vali()
+                {
+
+                }
+                // Load the client interfaces for the YouTube Analytics and Data APIs, which
+                // are required to use the Google APIs JS client. More info is available at
+                // http://code.google.com/p/google-api-javascript-client/wiki/GettingStarted#Loading_the_Client
+                function loadAPIClientInterfaces() {
+                    gapi.client.load('youtube', 'v3', function () {
+                        gapi.client.load('youtubeAnalytics', 'v1', function () {
+                            // After both client interfaces load, use the Data API to request
+                            // information about the authenticated user's channel.
+                            getUserChannel();
+                        });
+                    });
+                }
+        /*
+                $('#gen').click(function () {
+                //    alert('came here');
+                    var fd = $("#datepicker1").val();
+                    var ed = $("#datepicker2").val();
+                    // toString(firstdate);
+                    var strd = fd.split("/");
+                    var endd = ed.split("/");
+
+                    var strtf = strd[2] + "-" + strd[0] + "-" + strd[1];
+                    var endf = endd[2] + "-" + endd[0] + "-" + endd[1];
+                    if (fd != "" && ed != "") {
+                        if (strd[2] <= endd[2]) {
+                            if (strd[0] <= endd[0]) {
+                                if (strd[1] < endd[1] || (strd[1] > endd[1] && strd[0] < endd[0])) {
+                                    //  alert('the date format is fine');
+                                    //alert(strtf + " and " + endf);
+                                    startdate = strtf;
+                                    enddate = endf;
+
+                                    // alert(strUser + 'hello');
+                                    //     alert(strUser + 'empty');
+                                    if (strUser != "") {
+
+                                      //  document.getElementById("graph").scrollIntoView();
+                                        // trial();
+                                        alert('everything is fine');
+                                    }
+                                    else {
+                                        alert('Sorry You do Not administer any pages! You cannot procceed');
+                                    }
+
+                                }
+                                else {
+                                    alert('Please make sure that the Start date is after the End date and try again');
+                                }
+                            }
+                            else {
+                                alert('Please make sure that the Start date is after the End date and try again');
+                            }
+
+                            // alert('rocks');
+                        }
+                        else {
+                            alert('Please make sure that the Start date is after the End date and try again');
+                        }
+
+                    }
+                    else {
+                        alert('Please select the start date and end date and try again');
+                    }
+                });
+                */
+                // Call the Data API to retrieve information about the currently
+                // authenticated user's YouTube channel.
+                function getUserChannel() {
+                    // Also see: https://developers.google.com/youtube/v3/docs/channels/list
+                    var request = gapi.client.youtube.channels.list({
+                        // Setting the "mine" request parameter's value to "true" indicates that
+                        // you want to retrieve the currently authenticated user's channel.
+                        mine: true,
+                        part: 'id,contentDetails'
+                       
+                    });
+                    //the maxResults make sure that the display can hold up to 50 videos. the default is 5 apparently.
+                    request.execute(function (response) {
+                        if ('error' in response) {
+                            
+                            displayMessage(response.error.message);
+                        } else {
+                            // We need the channel's channel ID to make calls to the Analytics API.
+                            // The channel ID value has the form "UCdLFeWKpkLhkguiMZUp8lWA".
+                            channelId = response.items[0].id;
+                          //  alert(channelId);
+                            // Retrieve the playlist ID that uniquely identifies the playlist of
+                            // videos uploaded to the authenticated user's channel. This value has
+                            // the form "UUdLFeWKpkLhkguiMZUp8lWA".
+                            var uploadsListId = response.items[0].contentDetails.relatedPlaylists.uploads;
+                            var upl = response.items[0].id;
+                           // alert(uploadsListId);
+                           // alert(upl+"seems epty");
+                            // Use the playlist ID to retrieve the list of uploaded videos.
+                            getPlaylistItems(uploadsListId);
+                        }
+                    });
+                }
+
+                // Call the Data API to retrieve the items in a particular playlist. In this
+                // example, we are retrieving a playlist of the currently authenticated user's
+                // uploaded videos. By default, the list returns the most recent videos first.
+                var hello;
+                function getPlaylistItems(listId) {
+            //        alert('came here');
+                    // See https://developers.google.com/youtube/v3/docs/playlistitems/list
+                    var request = gapi.client.youtube.playlistItems.list({
+                        playlistId: listId,
+                        part: 'snippet',
+                        maxResults:50
+                       
+                    });
+
+                    request.execute(function (response) {
+                        if ('error' in response) {
+           //                 alert('there is a problem here');
+                            displayMessage(response.error.message);
+                        } else {
+               //             alert('damn did not come here');
+                            if ('items' in response) {
+                                // The jQuery.map() function iterates through all of the items in
+                                // the response and creates a new array that only contains the
+                                // specific property we're looking for: videoId.
+                                var videoIds = $.map(response.items, function (item) {
+                                    return item.snippet.resourceId.videoId;
+                                });
+
+                                hello = videoIds;
+                 //               alert('what the hell');
+                                // Now that we know the IDs of all the videos in the uploads list,
+                                // we can retrieve information about each video.
+                                getVideoMetadata(videoIds);
+                            } else {
+                                displayMessage('There are no videos in your channel.');
+                            }
+                        }
+                    });
+                }
+                var name;
+
+                var k;
+                var a;
+                var l;
+                var titlerec = new Array();
+                // Given an array of video IDs, this function obtains metadata about each
+                // video and then uses that metadata to display a list of videos.
+                function getVideoMetadata(videoIds) {
+                    a = 0;
+
+                    // https://developers.google.com/youtube/v3/docs/videos/list
+                    var request = gapi.client.youtube.videos.list({
+                        // The 'id' property's value is a comma-separated string of video IDs.
+                        id: videoIds.join(','),
+                        part: 'id,snippet,statistics',
+                        maxResults:50
+                    });
+
+                    request.execute(function (response) {
+                        if ('error' in response) {
+            //                alert('it isexiting here');
+                            displayMessage(response.error.message);
+                        } else {
+                            // Get the jQuery wrapper for the #video-list element before starting
+                            // the loop.
+                //            alert('came through fine here');
+                           // var videoList = $('#video-list');
+                            $.each(response.items, function () {
+                 //               alert('impossible1');
+                                // Exclude videos that do not have any views, since those videos
+                                // will not have any interesting viewcount Analytics data.
+                                if (this.statistics.viewCount == 0) {
+                                    return;
+                                }
+                                if (l != 0) {
+                                    k = 0;
+                                    l = 0;
+                                }
+                                var title = this.snippet.title;
+                     //           alert(title + '    ' + k);
+                                titlerec[k] = title;
+                                k++;
+                                var videoId = this.id;
+                 //               alert('impossible2');
+                                // Create a new <li> element that contains an <a> element.
+                                // Set the <a> element's text content to the video's title, and
+                                // add a click handler that will display Analytics data when invoked.
+                             //   var liElement = $('<li>');
+                               // var aElement = $('<a>');
+                                // Setting the href value to '#' ensures that the browser renders the
+                                // <a> element as a clickable link.
+                              //  aElement.attr('href', '#');
+                              //  aElement.text(title);
+
+                             //   displayVideoAnalytics();
+                                // Call the jQuery.append() method to add the new <a> element to
+                                // the <li> element, and the <li> element to the parent
+                                // list, which is identified by the 'videoList' variable.
+                              //  liElement.append(aElement);
+                              //  videoList.append(liElement);
+                            });
+                           $('#gen').click(function () {
+
+                                // displayVideoAnalytics();
+                               validate();
+                            });
+                            if (videoList.children().length == 0) {
+                                // Display a message if the channel does not have any viewed videos.
+                                displayMessage('Your channel does not have any videos that have been viewed.');
+                            }
+                        }
+                    });
+                }
+                var startdate;
+                var enddate;
+
+                function validate() {
+                    var fd = $("#datepicker1").val();
+                    var ed = $("#datepicker2").val();
+                    // toString(firstdate);
+                    var strd = fd.split("/");
+                    var endd = ed.split("/");
+
+                    var strtf = strd[2] + "-" + strd[0] + "-" + strd[1];
+                    var endf = endd[2] + "-" + endd[0] + "-" + endd[1];
+                   
+                                    //  alert('the date format is fine');
+                                    //alert(strtf + " and " + endf);
+                                    startdate = strtf;
+                                    enddate = endf;
+                                    //  var e = document.getElementById("sel");
+                                    //var strUser = e.options[e.selectedIndex].text;
+                                    // var val = e.options[e.selectedIndex].value;
+                                    // alert(strUser + 'hello');
+                                    //     alert(strUser + 'empty');
+
+                                        //document.getElementById("theformclass").style.visibility = "collapse";
+                                        // document.getElementById("graph").style.visibility = "visible";
+                                        //    document.getElementById("pro-btn").style.visibility = "collapse";
+                    //   document.getElementById("graph").scrollIntoView();
+                                    document.getElementById("theformclass").style.visibility = "collapse";
+                    // document.getElementById("graph").style.visibility = "visible";
+                                    document.getElementById("pro-btn").style.visibility = "collapse";
+                                        displayVideoAnalytics();
+
+
+
+                }
+                // This function requests YouTube Analytics data for a video and displays
+                // the results in a chart.
+                function displayVideoAnalytics() {
+                    if (channelId) {
+                        // To use a different date range, modify the ONE_MONTH_IN_MILLISECONDS
+                        // variable to a different millisecond delta as desired.
+                        var today = new Date();
+                       // var a = 0;
+                        var lastMonth = new Date(today.getTime() - ONE_MONTH_IN_MILLISECONDS);
+
+                        if (a == 0) {
+
+
+                            var request1 = gapi.client.youtubeAnalytics.reports.query({
+                                // The start-date and end-date parameters must be YYYY-MM-DD strings.
+                                'start-date': startdate,
+                                'end-date': enddate,
+                                // At this time, you need to explicitly specify channel==channelId.
+                                // See https://developers.google.com/youtube/analytics/v1/#ids
+                                ids: 'channel==' + channelId,
+                                dimensions: 'video',
+                                sort: 'views',
+                                // See https://developers.google.com/youtube/analytics/v1/available_reports
+                                // for details about the different filters and metrics you can request
+                                // if the "dimensions" parameter value is "day".
+                                metrics: 'views,likes,dislikes,subscribersGained,estimatedMinutesWatched,shares',
+                                //   maxresults: '10'
+                                //  max-results: '10'
+                                filters: 'video==' + hello
+                            });
+                            request1.execute(function (response) {
+                                // This function is called regardless of whether the request succeeds.
+                                // The response contains YouTube Analytics data or an error message.
+                                if ('error' in response) {
+
+                                    displayMessage(response.error.message);
+                                } else {
+                                    a++;
+                                    //  displayChart(videoId, response);
+                                    displayChart2(response);
+                                }
+                            });
+                        }
+
+
+                            //}
+
+                            // else {
+
+                        else if(a==1) {
+
+                    //        alert('never came on');
+                            var request = gapi.client.youtubeAnalytics.reports.query({
+                                // The start-date and end-date parameters must be YYYY-MM-DD strings.
+                                'start-date': startdate,
+                                'end-date': enddate,
+                                // At this time, you need to explicitly specify channel==channelId.
+                                // See https://developers.google.com/youtube/analytics/v1/#ids
+                                ids: 'channel==' + channelId,
+                                dimensions: 'day',
+                                sort: 'day',
+                                // See https://developers.google.com/youtube/analytics/v1/available_reports
+                                // for details about the different filters and metrics you can request
+                                // if the "dimensions" parameter value is "day".
+                                metrics: 'views',
+                                //   maxresults: '10'
+                                //  max-results: '10'
+                                filters: 'video==' + hello
+                            });
+                            // }
+                            //hello has all the videoID's separated by comments.
+                            request.execute(function (response) {
+                                // This function is called regardless of whether the request succeeds.
+                                // The response contains YouTube Analytics data or an error message.
+                                if ('error' in response) {
+                                    displayMessage(response.error.message);
+                                } else {
+                                    a++;
+                                    //alert('success');
+                                    displayChart(response);
+                                    // displayChart2(videoId, response)
+                                }
+                            });
+                        }
+                        else if (a == 2) {
+
+                 //           alert('never came on');
+                            var request = gapi.client.youtubeAnalytics.reports.query({
+                                // The start-date and end-date parameters must be YYYY-MM-DD strings.
+                                'start-date': startdate,
+                                'end-date': enddate,
+                                // At this time, you need to explicitly specify channel==channelId.
+                                // See https://developers.google.com/youtube/analytics/v1/#ids
+                                ids: 'channel==' + channelId,
+                                dimensions: 'day',
+                                sort: 'day',
+                                // See https://developers.google.com/youtube/analytics/v1/available_reports
+                                // for details about the different filters and metrics you can request
+                                // if the "dimensions" parameter value is "day".
+                                metrics: 'likes',
+                                //   maxresults: '10'
+                                //  max-results: '10'
+                                filters: 'video==' + hello
+                            });
+                            // }
+                            //hello has all the videoID's separated by comments.
+                            request.execute(function (response) {
+                                // This function is called regardless of whether the request succeeds.
+                                // The response contains YouTube Analytics data or an error message.
+                                if ('error' in response) {
+                                    displayMessage(response.error.message);
+                                } else {
+                                    a++;
+                                    //alert('success');
+                                    displayChart3(response);
+                                    // displayChart2(videoId, response)
+                                }
+                            });
+                        }
+                    }
+                        //  }
+                    else {
+                        // The currently authenticated user's channel ID is not available.
+                        displayMessage('The YouTube channel ID for the current user is not available.');
+                    }
+                }
+
+                // This boilerplate code takes a Date object and returns a YYYY-MM-DD string.
+                function formatDateString(date) {
+                    var yyyy = date.getFullYear().toString();
+                    var mm = padToTwoCharacters(date.getMonth() + 1);
+                    var dd = padToTwoCharacters(date.getDate());
+
+                    return yyyy + '-' + mm + '-' + dd;
+                }
+
+                // If number is a single digit, prepend a '0'. Otherwise, return the number
+                //  as a string.
+                function padToTwoCharacters(number) {
+                    if (number < 10) {
+                        return '0' + number;
+                    } else {
+                        return number.toString();
+                    }
+                }
+
+                // Call the Google Chart Tools API to generate a chart of Analytics data.
+                function displayChart(response) {
+                    if ('rows' in response) {
+                        hideMessage();
+
+                        // The columnHeaders property contains an array of objects representing
+                        // each column's title -- e.g.: [{name:"day"},{name:"views"}]
+                        // We need these column titles as a simple array, so we call jQuery.map()
+                        // to get each element's "name" property and create a new array that only
+                        // contains those values.
+                        var columns = $.map(response.columnHeaders, function (item) {
+                            return item.name;
+                        });
+                        for (i = 0; i < k; i++) {
+                            //    //alert('hello'+response.rows[i])
+                            response.rows[i][0] = (i + 1);
+                            //   // alert(titlerec[i]);
+                        }
+                        // The google.visualization.arrayToDataTable() function wants an array
+                        // of arrays. The first element is an array of column titles, calculated
+                        // above as "columns". The remaining elements are arrays that each
+                        // represent a row of data. Fortunately, response.rows is already in
+                        // this format, so it can just be concatenated.
+
+                        // See https://developers.google.com/chart/interactive/docs/datatables_dataviews#arraytodatatable
+                        var chartDataArray = [columns].concat(response.rows);
+
+                        // alert('hello' + response.rows[0])
+                        var i
+             //           alert(k);
+                        // alert();
+                        // while(response.rows[i].)
+                    //    for (i = 0; i < k; i++) {
+                            //    //alert('hello'+response.rows[i])
+                  //          response.rows[i][0] = titlerec[i];
+                            //   // alert(titlerec[i]);
+                   //     }
+                        var chartDataTable = google.visualization.arrayToDataTable(chartDataArray);
+                      //  alert('fine 1');
+                        var chart = new google.visualization.LineChart(document.getElementById('chartc'));
+                       // alert('fine 2');
+                        chart.draw(chartDataTable, {
+                            // Additional options can be set if desired as described at:
+                            // https://developers.google.com/chart/interactive/docs/reference#visdraw
+                           
+                            backgroundColor: '#4D4D4D',
+                            dataOpacity: 0.85,
+                            //curveType: 'function',
+                            lineWidth:4,
+                            legend: {
+
+                                position: 'none'
+                            },
+                            hAxis: {
+                               // minValue:0,
+                                gridlines: {
+                                    color: '#848482'
+                                },
+                            textStyle: {
+           
+                                color: '#E6E6E6',
+                                bold: false,
+                                italic: true
+                            },
+                            titleTextStyle: {
+          
+                                color: 'white',
+                                bold: false,
+                                italic: false
+                            }
+                        },
+                            vAxis: {
+                              //  minValue: 0,
+                                gridlines: {
+                                    color: '#848482'
+                                },
+                            title: 'Views',
+                            textStyle: {
+          
+                                    color: '#E6E6E6',
+                                    bold: false,
+                                    italic: false
+                            },
+                                titleTextStyle: {
+           
+                                        color: '#E6E6E6',
+                                        bold: false,
+                                        italic: true
+                                }
+                            }
+                        });
+                        displayVideoAnalytics();
+                    } else {
+                        displayMessage('No data available for video ');
+                    }
+                }
+
+                function displayChart3(response) {
+                    if ('rows' in response) {
+                        hideMessage();
+           //             alert('came in 3');
+                        // The columnHeaders property contains an array of objects representing
+                        // each column's title -- e.g.: [{name:"day"},{name:"views"}]
+                        // We need these column titles as a simple array, so we call jQuery.map()
+                        // to get each element's "name" property and create a new array that only
+                        // contains those values.
+                        var columns = $.map(response.columnHeaders, function (item) {
+                            return item.name;
+                        });
+                        for (i = 0; i < k; i++) {
+                            //    //alert('hello'+response.rows[i])
+                            response.rows[i][0] = (i + 1);
+                            //   // alert(titlerec[i]);
+                        }
+                        // The google.visualization.arrayToDataTable() function wants an array
+                        // of arrays. The first element is an array of column titles, calculated
+                        // above as "columns". The remaining elements are arrays that each
+                        // represent a row of data. Fortunately, response.rows is already in
+                        // this format, so it can just be concatenated.
+
+                        // See https://developers.google.com/chart/interactive/docs/datatables_dataviews#arraytodatatable
+                        var chartDataArray = [columns].concat(response.rows);
+
+                        // alert('hello' + response.rows[0])
+                        var i
+           //             alert(k);
+                        // alert();
+                        // while(response.rows[i].)
+                        //    for (i = 0; i < k; i++) {
+                        //    //alert('hello'+response.rows[i])
+                        //          response.rows[i][0] = titlerec[i];
+                        //   // alert(titlerec[i]);
+                        //     }
+                        var chartDataTable = google.visualization.arrayToDataTable(chartDataArray);
+                        //  alert('fine 1');
+                        var chart = new google.visualization.LineChart(document.getElementById('chart3'));
+                        // alert('fine 2');
+                        chart.draw(chartDataTable, {
+                            // Additional options can be set if desired as described at:
+                            // https://developers.google.com/chart/interactive/docs/reference#visdraw
+                            backgroundColor: '#4D4D4D',
+                            dataOpacity: 0.85,
+                            //curveType: 'function',
+                            lineWidth: 4,
+                            legend: {
+
+                                position: 'none'
+                            },
+                            hAxis: {
+                                // minValue:0,
+                                gridlines: {
+                                    color: '#848482'
+                                },
+                                textStyle: {
+
+                                    color: '#E6E6E6',
+                                    bold: false,
+                                    italic: true
+                                },
+                                titleTextStyle: {
+
+                                    color: 'white',
+                                    bold: false,
+                                    italic: false
+                                }
+                            },
+                            vAxis: {
+                                //  minValue: 0,
+                                gridlines: {
+                                    color: '#848482'
+                                },
+                                title: 'Likes',
+                                textStyle: {
+
+                                    color: '#E6E6E6',
+                                    bold: false,
+                                    italic: false
+                                },
+                                titleTextStyle: {
+
+                                    color: '#E6E6E6',
+                                    bold: false,
+                                    italic: true
+                                }
+                            }
+                        });
+                        document.getElementById("graph").scrollIntoView();
+                        document.getElementById("graph").style.visibility = "visible";
+                    } else {
+
+                        displayMessage('No data available for video ');
+                    }
+                }
+                function displayChart2(response) {
+                    if ('rows' in response) {
+                        hideMessage();
+           //             alert('chart2');
+                        // The columnHeaders property contains an array of objects representing
+                        // each column's title -- e.g.: [{name:"day"},{name:"views"}]
+                        // We need these column titles as a simple array, so we call jQuery.map()
+                        // to get each element's "name" property and create a new array that only
+                        // contains those values.
+                        response.columnHeaders[0].name = "Video";
+                        response.columnHeaders[1].name = "Views";
+                        response.columnHeaders[2].name = "Likes";
+
+                        response.columnHeaders[3].name = "Dislikes";
+                        response.columnHeaders[4].name = "Subscribers Gained";
+                        response.columnHeaders[5].name = "Estimated Minutes Watched";
+                        response.columnHeaders[6].name = "Shares";
+                        var columns = $.map(response.columnHeaders, function (item) {
+                            return item.name;
+                        });
+
+                        // The google.visualization.arrayToDataTable() function wants an array
+                        // of arrays. The first element is an array of column titles, calculated
+                        // above as "columns". The remaining elements are arrays that each
+                        // represent a row of data. Fortunately, response.rows is already in
+                        // this format, so it can just be concatenated.
+
+                        // See https://developers.google.com/chart/interactive/docs/datatables_dataviews#arraytodatatable
+                        var chartDataArray = [columns].concat(response.rows);
+                        // alert('hello' + response.rows[0])
+                        // var i
+       //                 alert(k);
+                        // alert();
+                        // while(response.rows[i].)
+                        //   for (i = 0; i < k; i++) {
+                        //alert('hello'+response.rows[i])
+                        //  response.rows[i][0] = titlerec[i];
+                        //      // alert(titlerec[i]);
+                        //   }
+                        var n = 0;
+                        // alert(response.rows[0][1]);
+                        var i = 0;
+                        var likes = 0;
+                        var dislikes = 0;
+                        var subs = 0;
+                        var shares = 0;
+                        var views = 0;
+                        var shares = 0;
+
+                      //  sum = 0;
+                        for (i = 0; i < k; i++) {
+                            //    //alert('hello'+response.rows[i])
+                            response.rows[i][0] = titlerec[i];
+                            //   // alert(titlerec[i]);
+                        }
+                        // alert(response.columnHeaders[0].name+'column name');
+
+                        for (i = 0; i < k; i++)
+                        {
+                             views = views + response.rows[i][1];
+                        }
+
+                        for (i = 0; i < k; i++)
+                        {
+                            likes = likes + response.rows[i][2];
+                        }
+                        for (i = 0; i < k; i++)
+                        {
+                            dislikes = dislikes + response.rows[i][3];
+                        }
+                        for (i = 0; i < k; i++)
+                        {
+                            subs = subs + response.rows[i][4];
+                        }
+                        for (i = 0; i < k; i++)
+                        {
+                            shares = shares + response.rows[i][6];
+                        }
+
+                        var page_table = new google.visualization.DataTable();
+                        page_table.addColumn('string', 'Metric');
+                        page_table.addColumn('number', 'Value');
+
+                        page_table.addRows([
+                            ['Views', views],
+                            ['Likes', likes],
+                            ['Dislikes', dislikes],
+                            ['Subscribers Gained', subs],
+                            ['Shares', shares]
+                        ]);
+
+                        var table = new google.visualization.Table(document.getElementById('chart4'));
+                        table.draw(page_table, {title: 'The overview for the channel'});
+
+           //             alert('total views is' + views);
+                        var chartDataTable = google.visualization.arrayToDataTable(chartDataArray);
+
+                        var chart = new google.visualization.Table(document.getElementById('chart'));
+                        // var formatter = new google.visualization.ColorFormat();
+                        /*  for (i = 0; i < k; i++)
+                          {
+                              if(response.rows[i][1]-response.rows[i][2]<0)
+                              {
+
+                              }
+                          }
+                          */
+                        // formatter.addRange()
+                        // formatter.addRange(2, null , 'white', 'orange');
+                        // formatter.format(charDataTable, 1);
+                        chart.draw(chartDataTable, {
+                            // Additional options can be set if desired as described at:
+                            // https://developers.google.com/chart/interactive/docs/reference#visdraw
+                            title: 'Views per Day of Video '
+                        });
+                        displayVideoAnalytics();
+                    } else {
+                        displayMessage('No data available for video ' );
+                    }
+                }
+
+                // This helper method displays a message on the page.
+                function displayMessage(message) {
+                    $('#message').text(message).show();
+                }
+
+                // This helper method hides a previously displayed message on the page.
+                function hideMessage() {
+                    $('#message').hide();
+                }
+
+
+    </script>
+    <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=onJSClientLoad"></script>
+    
+    <div id="login-container" class="pre-auth">
+      Please Login to google and then continue.
+    </div>
+    <div class="post-auth">
+        <section id="home" class="pfblock-image screen-height">
+            <div class="home-overlay"></div>
+            <!-- <div class="intro">
+         <div class="start">Say Hello to</div>
+         <h1>SHARK</h1>
+         <div class="start">Ruling the sea</div>
+         </div> -->
+            <!-- If You want to add any heading or something uncomment above code-->
+            <a href="#services">
+                <div class="scroll-down">
+                    <span>
+                        <i class="fa fa-angle-down fa-2x"></i>
+                    </span>
+                </div>
+            </a>
+        </section>
+        <header class="header" style="margin-bottom:25px;">
+            <nav class="navbar navbar-custom no-padding no-margin" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#custom-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="index.html">Analytic DashBoard</a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="custom-collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a onclick="history.go(0)" value="Refresh">Restart All over</a></li>
+                            <li><a href="#google">Google</a></li>
+                            <li><a onclick="location.href='facebook.html'">Facebook</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>   
+        <section id="services" class="pfblock pfblock-gray no-padding no-margin">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-6 col-sm-offset-3">
+                        <div class="pfblock-header wow fadeInUp">
+                            <h2 class="pfblock-title" style="text-align:left">Social Media Analytics Tool</h2>
+                           
+                            <div class="pfblock-line"></div>
+                            <div class="pfblock-subtitle">
+                                This analytics tool was built primarily for Social Media Advertising companies and also for brands to track their performance in a social media platform like facebook. Support for Youtube will be added soon. The tool is different in a way that some companies would like to compare their growth over the month in two parts(the first 15 days and the last 15) by selecting the option 15 Day format, the user gets reports that are divided into two halves. The other option is for the normal 30 day format. The Pages that are administered by the logged in user will appear if the user has any page that he/she administers. Click the generate report after filling up the data to receive your reports. Log In right away.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section> 
+        
+        <div id="google" style="padding: 120px 0 100px;">
+           
+         
+           <script>
+                $(function () {
+                    function runEffect() {
+                        $("#theform").show("blind", 1000);
+                    };
+                    $("#pro-btn").click(function () {
+                        /* FB.getLoginStatus(function (response) {
+                             if (response.status == 'connected') {
+                                 // login();
+                                 ShowMyName();
+                                 //document.getElementById("theform").style.visibility = "visible" ;
+                                 //   $("theform").slideToggle("slow");
+                                 runEffect();
+                             }
+                             else {
+                                 alert('Please make sure that you are logged in or have authenticated the app before proceeding');
+                             }
+                         });
+                         return false;*/
+                        runEffect(); //Delete THIS
+                    });
+                    $("#theform").hide();
+                });
+            </script>
+            <div style="margin-left:45%;">
+                <button id="pro-btn" class="btn btn-primary btn-lg" style="width:144px;height:39px;">Proceed</button>
+            </div>
+            <div id="theformclass" class="container" style="width:50%">
+                <div id="theform" class="container">
+                    <div class="jumbotron" style="width:50%;" id="form-style">
+                        <div role="form">
+                            <div class="form-group">
+                                <label for="datepicker1">Start Date:</label>
+
+                                <input type="text" class="form-control" id="datepicker1" style="opacity:1;"placeholder="Start Date">
+                            </div>
+                            <div class="form-group">
+                                <label for="datepicker2">End Date:</label>
+
+                                <input type="text" class="form-control" id="datepicker2" style="opacity:1;"  placeholder="End Date">
+                            </div>
+                           
+                           
+                            <div class="form-group">
+                                <button id="gen" style="opacity:1;"  class="btn btn-success btn-lg">Generate Report </button>
+                                <!--<button type="submit"  class="btn btn-primary btn-lg">Restart </button>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="graph" style="visibility:hidden;background-color:#C5C5C5">
+            <div id="message"></div>
+            <div id="23" class="row" style="height:auto">
+                <div class="col-md-12" style="height:auto">
+                    <div class="panel panel-primary" style="height:auto">
+                        <div class="panel-heading">
+                            <p style="margin-left:34%">Individual Video Metrics</p>
+                        </div>
+                        <div class="panel-body" style="height:auto;width:auto;align-content:center">
+
+                            <div id="chart" style="height:auto; width:auto; align-content:center"></div>
+                        </div>
+
+                    </div>
+                </div>
+                </div>
+             <!--Row div ends-->
+                <div id="299" class="row" style="height:auto">
+
+                    <div class="col-md-2" style="height:auto">
+                        <div class="panel panel-primary" style="height:inherit">
+                            <div class="panel-heading">
+                                <p style="margin-left:18%">Overview of Videos</p>
+                            </div>
+                            <div class="panel-body" style="height:auto;width:auto;align-content:center">
+
+                                <div id="chart4" style="height:auto; width:auto; align-content:center"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div> <!--Row div ends-->
+            <br><br>
+            <div id="24" class="row" style="height:auto">
+                <div class="col-md-6" style="height:auto">
+                    <div class="panel panel-primary" style="height:auto">
+                        <div class="panel-heading">
+                            <p style="margin-left:34%">Timeline of Views</p>
+                        </div>
+                        <div class="panel-body" style="height:inherit; width: inherit;background-color:#4D4D4D" >
+
+                            <div id="chartc" style="height:auto; width:auto"></div>
+                        </div>
+
+                    </div>
+                </div>
+                <!--Row div ends-->
+
+                <div class="col-md-6" style="height:auto">
+                    <div class="panel panel-primary" style="height:auto">
+                        <div class="panel-heading">
+                            <p style="margin-left:34%">Timeline of Likes</p>
+                        </div>
+                        <div class="panel-body" style="height:inherit;width:inherit;background-color:#4D4D4D">
+
+                            <div id="chart3" style="height:inherit; width:inherit"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div> <!--Row div ends-->
+
+
+        </div>
+    </div>
+</body>
+</html>
